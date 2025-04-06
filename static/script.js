@@ -4,29 +4,24 @@ document.addEventListener("DOMContentLoaded", () => {
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
-    // Проверка, выбран ли файл
     const fileInput = document.getElementById("fileInput");
     if (!fileInput.files.length) {
       showMessage("Пожалуйста, выберите файл для конвертации", "error");
       return;
     }
 
-    // Показать индикатор загрузки
     showLoading(true);
 
     try {
-      // Отправка формы с использованием Fetch API
       const formData = new FormData(form);
       const response = await fetch("/convert", {
         method: "POST",
         body: formData,
       });
 
-      // Проверка на тип ответа (JSON = ошибка, Blob = файл)
       const contentType = response.headers.get("content-type");
 
       if (contentType && contentType.includes("application/json")) {
-        // Если сервер вернул JSON, значит это сообщение об ошибке
         const data = await response.json();
         throw new Error(
           data.error || data.detail || "Неизвестная ошибка при конвертации"
@@ -37,7 +32,6 @@ document.addEventListener("DOMContentLoaded", () => {
         throw new Error(`Ошибка сервера: ${response.status}`);
       }
 
-      // Получаем имя файла из заголовков, если оно там есть
       const contentDisposition = response.headers.get("content-disposition");
       let filename = "converted-file";
 
@@ -48,10 +42,8 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
 
-      // Получаем бинарные данные и создаем объект Blob
       const blob = await response.blob();
 
-      // Скачиваем файл
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -72,13 +64,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Функция для отображения сообщений (ошибки/успех)
   function showMessage(message, type) {
-    // Удаляем предыдущие сообщения
     const existingMessages = document.querySelectorAll(".message-alert");
     existingMessages.forEach((el) => el.remove());
 
-    // Создаем новое сообщение
     const messageEl = document.createElement("div");
     messageEl.className =
       "message-alert fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 transform transition-transform duration-300 ease-in-out";
@@ -93,12 +82,10 @@ document.addEventListener("DOMContentLoaded", () => {
     messageEl.textContent = message;
     document.body.appendChild(messageEl);
 
-    // Анимация появления
     setTimeout(() => {
       messageEl.classList.add("translate-y-1");
     }, 10);
 
-    // Автоматическое скрытие через 5 секунд
     setTimeout(() => {
       messageEl.classList.add("opacity-0");
       setTimeout(() => {
@@ -109,9 +96,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 5000);
   }
 
-  // Функция для отображения/скрытия индикатора загрузки
   function showLoading(isLoading) {
-    // Находим или создаем контейнер для загрузки
     let loadingIndicator = document.getElementById("loading-indicator");
 
     if (!loadingIndicator && isLoading) {
@@ -130,7 +115,6 @@ document.addEventListener("DOMContentLoaded", () => {
       loadingIndicator.remove();
     }
 
-    // Блокируем/разблокируем кнопку конвертации
     const convertButton = document.getElementById("convertButton");
     if (convertButton) {
       convertButton.disabled = isLoading;
